@@ -4,10 +4,7 @@ const nextConfig = {
     images: {
         unoptimized: true
     },
-    basePath: '',
-    experimental: {
-        appDir: true
-    }
+    distDir: 'out'
 };
 
 export default nextConfig;

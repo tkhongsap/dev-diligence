@@ -1,1 +1,1 @@
-web: pwd && echo "Contents of current directory:" && ls -la && cd .. && echo "Contents of parent directory:" && ls -la && chmod +x build.sh && bash build.sh 2>&1 && cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT 
+web: uvicorn main:app --host 0.0.0.0 --port $PORT

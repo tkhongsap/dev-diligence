@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd dev-diligence && npm install && npm run build && npm run export && mkdir -p ../backend/static && cp -r out/* ../backend/static/"
+
+[deploy]
+startCommand = "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+restartPolicyType = "ON_FAILURE"
