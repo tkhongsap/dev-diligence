@@ -1,9 +1,14 @@
 #!/bin/bash
-set -e  # Exit on error
+set -ex  # Exit on error and print commands
 
 echo "Current directory: $(pwd)"
 echo "Listing directory contents:"
 ls -la
+
+if [ ! -d "dev-diligence" ]; then
+    echo "Error: dev-diligence directory not found!"
+    exit 1
+fi
 
 echo "Building frontend..."
 cd dev-diligence
@@ -15,7 +20,7 @@ rm -rf .next out
 
 # Install dependencies and build
 echo "Installing dependencies..."
-npm install
+npm install --verbose
 
 echo "Building Next.js app..."
 npm run build
