@@ -15,6 +15,8 @@ export default function NewReviewPage() {
 const router = useRouter()
 const [files, setFiles] = useState<File[]>([])
 const [dragActive, setDragActive] = useState(false)
+const [isLoading, setIsLoading] = useState(false)
+const [error, setError] = useState<string | null>(null)
 
 const handleDrag = (e: React.DragEvent) => {
  e.preventDefault()
@@ -46,11 +48,99 @@ const removeFile = (index: number) => {
  setFiles(prev => prev.filter((_, i) => i !== index))
 }
 
-const handleSubmit = (e: React.FormEvent) => {
- e.preventDefault()
- // Here you would typically send the code to your backend or API
- // For now, we'll just navigate to the review result page
- router.push('/review-result')
+const handleSubmitCode = async (code: string | File) => {
+  setIsLoading(true)
+  setError(null)
+  let responseData;
+  
+  try {
+    const formData = new FormData()
+    
+    // Log request details
+    console.log('\n=== Submitting Code Review ===')
+    console.log('Request type:', code instanceof File ? 'FILE' : 'CODE')
+    
+    if (code instanceof File) {
+      formData.append('file', code)
+      console.log('File details:', {
+        name: code.name,
+        type: code.type,
+        size: code.size,
+      })
+    } else {
+      formData.append('code', code)
+      console.log('Code details:', {
+        length: code.length,
+        preview: code.substring(0, 100) + '...'
+      })
+    }
+
+    const url = process.env.NEXT_PUBLIC_API_URL + '/analyze-code/'
+    console.log('Sending request to:', url)
+    
+    // Log FormData contents
+    console.log('FormData contents:')
+    Array.from(formData.entries()).forEach(([key, value]) => {
+      console.log(`- ${key}:`, value instanceof File ? 
+        `File(${value.name}, ${value.type}, ${value.size} bytes)` : 
+        `${value.toString().substring(0, 50)}...`)
+    })
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    })
+    
+    console.log('Response received:', {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Error response body:', errorText)
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+    }
+
+    responseData = await response.json()
+    console.log('Analysis result:', responseData)
+    
+    localStorage.setItem('codeAnalysis', JSON.stringify(responseData))
+    router.push('/review-result')
+
+  } catch (err) {
+    console.error('Error details:', err)
+    if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+      setError('Could not connect to the backend server. Is it running?')
+    } else {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  } finally {
+    setIsLoading(false)
+  }
+}
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  
+  const form = e.currentTarget
+  const codeTextarea = form.querySelector('#code') as HTMLTextAreaElement
+  const codeValue = codeTextarea?.value?.trim()
+  
+  try {
+    if (files.length > 0) {
+      await handleSubmitCode(files[0])
+    } else if (codeValue) {
+      await handleSubmitCode(codeValue)
+    } else {
+      setError('Please provide code either by file upload or direct input')
+    }
+  } catch (err) {
+    console.error('Submit error:', err)
+    setError('Failed to submit code for review')
+  }
 }
 
 return (
@@ -91,85 +181,76 @@ return (
            <Card>
              <CardContent className="pt-6">
                <form onSubmit={handleSubmit} className="space-y-4">
-                 <div>
-                   <Label htmlFor="title">Review Title</Label>
-                   <Input 
-                     id="title" 
-                     placeholder="Enter a descriptive title for your review"
-                     className="mt-1.5"
-                   />
-                 </div>
-
                  <div className="space-y-4">
-                   <Label>Code Input</Label>
-                   <div 
-                     className={`
-                       border-2 border-dashed rounded-lg p-4 sm:p-8
-                       ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-muted'}
-                       transition-colors duration-200
-                     `}
-                     onDragEnter={handleDrag}
-                     onDragLeave={handleDrag}
-                     onDragOver={handleDrag}
-                     onDrop={handleDrop}
-                   >
-                     <div className="text-center">
-                       <Upload className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
-                       <p className="mt-2 text-sm font-medium">
-                         Drop your files here, or{' '}
-                         <label className="text-blue-500 hover:text-blue-700 cursor-pointer">
-                           browse
-                           <input
-                             type="file"
-                             multiple
-                             className="hidden"
-                             onChange={handleFileInput}
-                             accept=".js,.py,.java,.ts,.go,.rs"
-                           />
-                         </label>
-                       </p>
-                       <p className="mt-1 text-xs text-muted-foreground">
-                         Supports: .js, .py, .java, .ts, .go, .rs files
-                       </p>
-                     </div>
-                   </div>
-
-                   {files.length > 0 && (
-                     <div className="space-y-2">
-                       {files.map((file, index) => (
-                         <div 
-                           key={index}
-                           className="flex items-center justify-between p-2 bg-muted rounded-md"
-                         >
-                           <span className="text-sm truncate">{file.name}</span>
-                           <Button
-                             variant="ghost"
-                             size="icon"
-                             onClick={() => removeFile(index)}
-                           >
-                             <X className="h-4 w-4" />
-                           </Button>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-
                    <div>
-                     <Label htmlFor="code">Or paste your code directly</Label>
-                     <Textarea
-                       id="code"
-                       placeholder="Paste your code here..."
-                       className="mt-1.5 font-mono"
-                       rows={10}
+                     <Label htmlFor="title">Review Title</Label>
+                     <Input
+                       id="title"
+                       placeholder="Enter a descriptive title for your review"
+                       className="mt-1.5"
                      />
                    </div>
+
+                   <div>
+                     <Label>Code Input</Label>
+                     <div
+                       className={`mt-1.5 border-2 border-dashed rounded-lg p-4 ${
+                         dragActive ? 'border-blue-500 bg-blue-50' : 'border-muted'
+                       }`}
+                       onDragEnter={handleDrag}
+                       onDragLeave={handleDrag}
+                       onDragOver={handleDrag}
+                       onDrop={handleDrop}
+                     >
+                       <div className="text-center">
+                         <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
+                         <p className="mt-1 text-sm font-medium">
+                           Drop your files here, or{' '}
+                           <label className="text-blue-500 hover:text-blue-700 cursor-pointer">
+                             browse
+                             <input
+                               type="file"
+                               multiple
+                               className="hidden"
+                               onChange={handleFileInput}
+                               accept=".js,.py,.java,.ts,.go,.rs"
+                             />
+                           </label>
+                         </p>
+                         <p className="text-xs text-muted-foreground">
+                           Supports: .js, .py, .java, .ts, .go, .rs files
+                         </p>
+                       </div>
+                     </div>
+
+                     <div className="mt-4">
+                       <Label htmlFor="code">Or paste your code directly</Label>
+                       <Textarea
+                         id="code"
+                         placeholder="Paste your code here..."
+                         className="mt-1.5 font-mono"
+                         rows={8}
+                       />
+                     </div>
+                   </div>
                  </div>
+
+                 {error && (
+                   <div className="text-red-500 text-sm mt-2">
+                     {error}
+                   </div>
+                 )}
+
                  <div className="flex flex-col sm:flex-row justify-end gap-4">
                    <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
                      <Link href="/dashboard">Cancel</Link>
                    </Button>
-                   <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
-                     Start Review
+                   <Button 
+                     type="submit" 
+                     className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                     disabled={isLoading}
+                   >
+                     {isLoading ? 'Analyzing...' : 'Start Review'}
                    </Button>
                  </div>
                </form>
