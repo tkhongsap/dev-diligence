@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Build frontend
+echo "Building frontend..."
 cd dev-diligence
 npm install
 npm run build
+npm run export
 
-# Copy built frontend to backend static directory
+echo "Copying frontend build to backend static..."
 mkdir -p ../backend/static
-cp -r .next/static/* ../backend/static/
-cp -r .next/standalone/* ../backend/static/
+cp -r out/* ../backend/static/
 
-# Back to root
-cd .. 
+echo "Back to root..."
+cd ..

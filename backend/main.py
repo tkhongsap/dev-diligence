@@ -201,5 +201,9 @@ async def list_models():
 
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
-    # Serve the frontend for any unmatched routes
+    # First try to serve from static directory
+    static_file = f"static/{full_path}"
+    if os.path.exists(static_file):
+        return FileResponse(static_file)
+    # If file not found, serve index.html for client-side routing
     return FileResponse("static/index.html") 
