@@ -1,1 +1,1 @@
-web: echo "Starting build process..." && cd .. && sh build.sh && echo "Build complete, starting server..." && cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT 
+web: cd .. && ls -la && chmod +x build.sh && sh build.sh 2>&1 && cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT 
