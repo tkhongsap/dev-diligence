@@ -49,8 +49,23 @@ if not openai_model:
 
 @app.get("/")
 async def root():
-    # Serve the frontend index.html instead of the API documentation
-    return FileResponse("static/index.html")
+    # Add debug logging
+    print("Serving root route")
+    try:
+        if not os.path.exists("static/index.html"):
+            print("Error: static/index.html not found")
+            print("Contents of static directory:", os.listdir("static"))
+            return JSONResponse(
+                content={"error": "Frontend files not found"},
+                status_code=500
+            )
+        return FileResponse("static/index.html")
+    except Exception as e:
+        print(f"Error serving index.html: {str(e)}")
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=500
+        )
 
 @app.get("/api-docs", response_class=HTMLResponse)
 async def api_docs():
