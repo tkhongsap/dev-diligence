@@ -51,9 +51,9 @@ const reviews: Review[] = [
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center">
+    <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container max-w-5xl flex h-14 items-center">
+        <div className="container flex h-14 items-center">
           <div className="flex items-center space-x-2">
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold">&#60;/&#62;</span>
@@ -89,111 +89,113 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="container max-w-5xl py-6 space-y-8 w-full px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-3xl font-bold tracking-tight">Code Reviews</h1>
-          <Link href="/new-review">
-            <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
-              + New Review
-            </Button>
-          </Link>
-        </div>
+      <div className="flex justify-center">
+        <main className="container max-w-6xl py-6 space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-3xl font-bold tracking-tight">Code Reviews</h1>
+            <Link href="/new-review">
+              <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                + New Review
+              </Button>
+            </Link>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-gradient-to-br from-blue-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Reviews
-              </CardTitle>
-              <Zap className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">
-                +2 from last week
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-green-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Completed
-              </CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">158</div>
-              <p className="text-xs text-muted-foreground">
-                +23 from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-yellow-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Average Score
-              </CardTitle>
-              <Star className="h-4 w-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8.5</div>
-              <p className="text-xs text-muted-foreground">
-                +0.3 from last week
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="bg-gradient-to-br from-blue-50">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active Reviews
+                </CardTitle>
+                <Zap className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">12</div>
+                <p className="text-xs text-muted-foreground">
+                  +2 from last week
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-green-50">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Completed
+                </CardTitle>
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">158</div>
+                <p className="text-xs text-muted-foreground">
+                  +23 from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-yellow-50">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Average Score
+                </CardTitle>
+                <Star className="h-4 w-4 text-yellow-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">8.5</div>
+                <p className="text-xs text-muted-foreground">
+                  +0.3 from last week
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border-b">
-            <div className="flex-1 w-full">
-              <Input
-                placeholder="Search code reviews..."
-                className="w-full sm:max-w-sm"
-              />
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border-b">
+              <div className="flex-1 w-full">
+                <Input
+                  placeholder="Search code reviews..."
+                  className="w-full sm:max-w-sm"
+                />
+              </div>
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Filter className="mr-2 h-4 w-4" />
+                Filters
+              </Button>
             </div>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-            </Button>
-          </div>
-          <div className="divide-y">
-            {reviews.map((review) => (
-              <Link
-                key={review.id}
-                href={`/review/${review.id}`}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-              >
-                <div className="space-y-1 mb-2 sm:mb-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-semibold">{review.title}</h2>
-                    <Badge variant={
-                      review.status === 'Completed' ? 'secondary' :
-                      review.status === 'In Review' ? 'default' : 'outline'
-                    } className={`
-                      ${review.status === 'Completed' ? 'bg-green-500 hover:bg-green-600 text-white' :
-                        review.status === 'In Review' ? 'bg-blue-500 hover:bg-blue-600 text-white' :
-                        'bg-yellow-500 hover:bg-yellow-600 text-white'}
-                    `}>
-                      {review.status}
-                    </Badge>
+            <div className="divide-y">
+              {reviews.map((review) => (
+                <Link
+                  key={review.id}
+                  href={`/review/${review.id}`}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="space-y-1 mb-2 sm:mb-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="font-semibold">{review.title}</h2>
+                      <Badge variant={
+                        review.status === 'Completed' ? 'secondary' :
+                        review.status === 'In Review' ? 'default' : 'outline'
+                      } className={
+                        review.status === 'Completed' ? 'bg-green-500' :
+                        review.status === 'In Review' ? 'bg-blue-500' :
+                        'bg-yellow-500'
+                      }>
+                        {review.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {review.language} • {review.lines} lines • {review.issues} issues • Updated {review.updatedAt}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {review.language} • {review.lines} lines • {review.issues} issues • Updated {review.updatedAt}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="font-semibold">{review.score}/10</div>
-                    <div className="text-sm text-muted-foreground">Score</div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="font-semibold">{review.score}/10</div>
+                      <div className="text-sm text-muted-foreground">Score</div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
