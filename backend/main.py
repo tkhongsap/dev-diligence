@@ -47,8 +47,13 @@ openai_model = os.getenv("OPENAI_API_MODEL")
 if not openai_model:
     raise ValueError("No OpenAI model specified. Please check your .env file.")
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def root():
+    # Serve the frontend index.html instead of the API documentation
+    return FileResponse("static/index.html")
+
+@app.get("/api-docs", response_class=HTMLResponse)
+async def api_docs():
     return get_root_html()
 
 @app.post("/analyze-code/")
