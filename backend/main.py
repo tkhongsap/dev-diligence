@@ -1,6 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from openai import OpenAI
 from utils.schemas import CODE_ANALYSIS_SCHEMA
@@ -19,6 +21,12 @@ app = FastAPI(
     description="API for analyzing code using OpenAI",
     version="1.0.0",
 )
+
+# Create static directory if it doesn't exist
+os.makedirs("static", exist_ok=True)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Get CORS origins from environment variable
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -189,4 +197,9 @@ async def list_models():
         models = client.models.list()
         return {"available_models": [model.id for model in models]}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    # Serve the frontend for any unmatched routes
+    return FileResponse("static/index.html") 
