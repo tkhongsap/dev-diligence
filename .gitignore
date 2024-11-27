@@ -1,26 +1,19 @@
-# Dependencies
-node_modules
-__pycache__
+# Node
+node_modules/
+.next/
+
+# Python
+__pycache__/
 *.pyc
 
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
-# Build output
-.next
-build
-dist
-
-# Logs
+# Docker
 *.log
-npm-debug.log*
 
-# IDE
-.vscode
-.idea
-
-# System files
+# OS files
 .DS_Store
 Thumbs.db 

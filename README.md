@@ -2,48 +2,29 @@
 
 A code review and analysis tool powered by AI.
 
-## Deployment
-
-### Backend (FastAPI)
-1. Set up environment variables in Railway:
-   - `OPENAI_API_KEY`: Your OpenAI API key
-   - `OPENAI_API_MODEL`: The OpenAI model to use (e.g., gpt-4)
-   - `CORS_ORIGINS`: Frontend URL (e.g., https://your-frontend-url.railway.app)
-
-2. Deploy backend:
-   - Railway will automatically detect the Python project and use the Procfile
-   - Make sure to set the environment variables in Railway dashboard
-
-### Frontend (Next.js)
-1. Set up environment variables in Railway:
-   - `NEXT_PUBLIC_API_URL`: Backend API URL
-
-2. Deploy frontend:
-   - Railway will automatically detect the Next.js project
-   - Build command: `npm run build`
-   - Start command: `npm start`
-
-## Development
+## Development with Docker
 
 1. Clone the repository
-2. Install dependencies:
+2. Copy environment files:
    ```bash
    # Backend
-   cd backend
-   pip install -r requirements.txt
-
+   cp backend/.env.example backend/.env
    # Frontend
-   cd dev-diligence
-   npm install
+   cp dev-diligence/.env.example dev-diligence/.env
    ```
-3. Set up environment variables
-4. Run the development servers:
-   ```bash
-   # Backend
-   cd backend
-   uvicorn main:app --reload
 
-   # Frontend
-   cd dev-diligence
-   npm run dev
-   ``` 
+3. Set up your environment variables in the .env files
+
+4. Start the development servers:
+   ```bash
+   docker compose up
+   ```
+
+   The services will be available at:
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:8000
+
+5. For development:
+   - Backend code changes will auto-reload
+   - Frontend code changes will trigger hot-reload
+   - Logs from both services will be visible in the terminal
