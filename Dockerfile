@@ -33,6 +33,7 @@ COPY --from=frontend-builder /app/frontend/.next/static /app/static/_next/static
 # Set permissions
 RUN chown -R appuser:appuser /app
 RUN chmod -R 755 /app/static
+RUN chmod +x /app/start.sh
 
 # Switch to non-root user
 USER appuser
@@ -42,4 +43,4 @@ EXPOSE 8000
 
 # Start the application
 ENV PORT=8000
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT} --log-level debug
+ENTRYPOINT ["/app/start.sh"]
