@@ -13,6 +13,13 @@ import httpx
 from datetime import datetime
 import logging
 
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -38,7 +45,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # Configure CORS
 CORS_ORIGINS = [
     "https://dev-diligence-production.up.railway.app",
-    "http://localhost:3000",  # For local development
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
@@ -256,19 +263,38 @@ async def analyze_code(
 
 @app.get("/")
 async def root():
-    return serve_frontend("")
+    try:
+        # Serve index.html directly
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        else:
+            return HTMLResponse(content="<h1>Dev Diligence API</h1><p>API is running.</p>")
+    except Exception as e:
+        logger.error(f"Error serving root route: {str(e)}")
+        return HTMLResponse(content="<h1>Error</h1><p>Internal server error</p>", status_code=500)
 
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
-    print(f"Serving path: {full_path}")
-    # First try to serve from static directory
-    static_file = f"static/{full_path}"
-    if os.path.exists(static_file):
-        print(f"Serving static file: {static_file}")
-        return FileResponse(static_file)
-    # If file not found, serve index.html for client-side routing
-    print("Falling back to index.html")
-    return FileResponse("static/index.html")
+    try:
+        logger.info(f"Serving path: {full_path}")
+        # First try to serve from static directory
+        static_file = os.path.join(static_dir, full_path)
+        if os.path.exists(static_file) and os.path.isfile(static_file):
+            logger.info(f"Serving static file: {static_file}")
+            return FileResponse(static_file)
+        
+        # If file not found, serve index.html for client-side routing
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            logger.info("Falling back to index.html")
+            return FileResponse(index_path)
+        
+        # If even index.html is not found, return a simple response
+        return HTMLResponse(content="<h1>Dev Diligence API</h1><p>API is running.</p>")
+    except Exception as e:
+        logger.error(f"Error serving path {full_path}: {str(e)}")
+        return HTMLResponse(content="<h1>Error</h1><p>Internal server error</p>", status_code=500)
 
 if __name__ == "__main__":
     import uvicorn
