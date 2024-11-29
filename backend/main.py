@@ -10,6 +10,7 @@ from utils.templates import get_root_html
 import os
 import json
 import httpx
+from datetime import datetime
 
 # Load environment variables from .env file
 load_dotenv()
@@ -55,9 +56,13 @@ port = int(os.getenv("PORT", 8000))  # Get port from environment or default to 8
 
 @app.get("/")
 async def root():
-    # Add debug logging
     print("Serving root route")
     try:
+        print(f"Current directory: {os.getcwd()}")
+        print(f"Static directory exists: {os.path.exists('static')}")
+        if os.path.exists("static"):
+            print(f"Static directory contents: {os.listdir('static')}")
+        
         if not os.path.exists("static/index.html"):
             print("Error: static/index.html not found")
             print("Contents of static directory:", os.listdir("static"))
@@ -233,6 +238,10 @@ async def serve_frontend(full_path: str):
         return FileResponse(static_file)
     # If file not found, serve index.html for client-side routing
     return FileResponse("static/index.html") 
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 if __name__ == "__main__":
     import uvicorn

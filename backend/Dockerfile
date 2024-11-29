@@ -16,5 +16,6 @@ RUN mkdir -p static && chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Use environment variable for port
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"] 
+# Use environment variable for port with fallback to 8000
+ENV PORT=8000
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
