@@ -106,7 +106,7 @@ async def startup_event():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    return {"status": "healthy"}
 
 @app.get("/api-docs", response_class=HTMLResponse)
 async def api_docs():

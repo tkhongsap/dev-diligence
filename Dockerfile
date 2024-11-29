@@ -27,8 +27,8 @@ COPY backend/ .
 RUN mkdir -p /app/static/_next
 
 # Copy built frontend files to backend static directory
-COPY --from=frontend-builder /app/frontend/.next/static /app/static/_next/static
 COPY --from=frontend-builder /app/frontend/out /app/static
+COPY --from=frontend-builder /app/frontend/.next/static /app/static/_next/static
 
 # Set permissions
 RUN chown -R appuser:appuser /app
@@ -36,9 +36,12 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Health check using the PORT environment variable
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+# Health check with increased timeout and start period
+HEALTHCHECK --interval=5s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT}/health || exit 1
 
-# Start the application using the PORT environment variable
+# Expose the port
+EXPOSE ${PORT}
+
+# Start the application
 CMD uvicorn main:app --host 0.0.0.0 --port ${PORT} 
