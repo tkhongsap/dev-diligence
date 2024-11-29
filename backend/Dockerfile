@@ -23,12 +23,9 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Make port configurable via environment variable
-ENV PORT=8000
-
-# Health check
+# Health check using the PORT environment variable
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT}/health || exit 1
 
-# Start the application with the correct port
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+# Start the application using the PORT environment variable
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT}

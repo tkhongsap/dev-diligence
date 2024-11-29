@@ -41,12 +41,10 @@ os.makedirs(static_dir, exist_ok=True)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
+app.mount("/_next/static", StaticFiles(directory=os.path.join(static_dir, "_next/static")), name="next-static")
 
 # Configure CORS
-CORS_ORIGINS = [
-    "https://dev-diligence-production.up.railway.app",
-    "http://localhost:3000"
-]
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "https://dev-diligence-production.up.railway.app").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -299,4 +297,5 @@ async def serve_frontend(full_path: str):
 
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
