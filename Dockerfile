@@ -10,8 +10,8 @@ RUN npm run build -- --no-lint
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install curl and netcat for healthcheck and debugging
+RUN apt-get update && apt-get install -y curl netcat-traditional && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser
@@ -32,16 +32,25 @@ COPY --from=frontend-builder /app/frontend/.next/static /app/static/_next/static
 
 # Set permissions
 RUN chown -R appuser:appuser /app
+RUN chmod -R 755 /app/static
 
 # Switch to non-root user
 USER appuser
 
+# Add a script to check if the service is ready
+COPY --chown=appuser:appuser <<EOF /app/healthcheck.sh
+#!/bin/bash
+curl --fail http://localhost:\${PORT}/health || exit 1
+EOF
+RUN chmod +x /app/healthcheck.sh
+
 # Health check with increased timeout and start period
-HEALTHCHECK --interval=5s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/health || exit 1
+HEALTHCHECK --interval=5s --timeout=10s --start-period=30s --retries=3 \
+    CMD /app/healthcheck.sh
 
 # Expose the port
-EXPOSE ${PORT}
+EXPOSE 8000
 
-# Start the application
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT} 
+# Start the application with explicit port
+ENV PORT=8000
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT} --log-level debug

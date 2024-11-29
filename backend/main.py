@@ -71,41 +71,22 @@ logger = logging.getLogger(__name__)
 async def startup_event():
     logger.info("Starting application...")
     logger.info(f"Current working directory: {os.getcwd()}")
-    
-    # Check static directory
+    logger.info(f"Environment PORT: {os.getenv('PORT')}")
     logger.info(f"Static directory exists: {os.path.exists(static_dir)}")
-    if os.path.exists(static_dir):
-        try:
-            files = os.listdir(static_dir)
-            logger.info(f"Static directory contents: {files}")
-            if not files:
-                logger.warning("Static directory is empty!")
-                # Create index.html if it doesn't exist
-                index_path = os.path.join(static_dir, "index.html")
-                if not os.path.exists(index_path):
-                    logger.info("Creating default index.html...")
-                    with open(index_path, "w") as f:
-                        f.write("""
-                        <!DOCTYPE html>
-                        <html>
-                            <head>
-                                <title>Dev Diligence</title>
-                            </head>
-                            <body>
-                                <h1>Dev Diligence API</h1>
-                                <p>API is running successfully.</p>
-                            </body>
-                        </html>
-                        """.strip())
-        except Exception as e:
-            logger.error(f"Error accessing static directory: {str(e)}")
     
-    logger.info(f"CORS origins: {CORS_ORIGINS}")
-    logger.info(f"OpenAI model: {openai_model}")
-    logger.info(f"Port: {port}")
+    try:
+        # Test health endpoint
+        logger.info("Testing health endpoint...")
+        async with httpx.AsyncClient() as client:
+            port = os.getenv('PORT', '8000')
+            response = await client.get(f"http://localhost:{port}/health")
+            logger.info(f"Health check response: {response.status_code}")
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
 
 @app.get("/health")
 async def health_check():
+    logger.info("Health check endpoint called")
     return {"status": "healthy"}
 
 @app.get("/api-docs", response_class=HTMLResponse)
