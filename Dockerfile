@@ -33,7 +33,6 @@ COPY --from=frontend-builder /app/frontend/.next/static /app/static/_next/static
 # Set permissions
 RUN chown -R appuser:appuser /app
 RUN chmod -R 755 /app/static
-RUN chmod +x /app/start.sh
 
 # Switch to non-root user
 USER appuser
@@ -43,4 +42,4 @@ EXPOSE 8000
 
 # Start the application
 ENV PORT=8000
-ENTRYPOINT ["/app/start.sh"]
+CMD ["python", "start.py"]
