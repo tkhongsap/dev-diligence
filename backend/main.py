@@ -73,16 +73,7 @@ async def startup_event():
     logger.info(f"Current working directory: {os.getcwd()}")
     logger.info(f"Environment PORT: {os.getenv('PORT')}")
     logger.info(f"Static directory exists: {os.path.exists(static_dir)}")
-    
-    try:
-        # Test health endpoint
-        logger.info("Testing health endpoint...")
-        async with httpx.AsyncClient() as client:
-            port = os.getenv('PORT', '8000')
-            response = await client.get(f"http://localhost:{port}/health")
-            logger.info(f"Health check response: {response.status_code}")
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
+    logger.info(f"CORS origins: {CORS_ORIGINS}")
 
 @app.get("/health")
 async def health_check():
