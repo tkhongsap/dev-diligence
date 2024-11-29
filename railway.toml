@@ -23,5 +23,5 @@ healthcheckTimeout = 300
 
 # Add the corrected CORS_ORIGINS environment variable
 environment = {
-  CORS_ORIGINS = "https://dev-diligence-production.up.railway.app"
+  CORS_ORIGINS = ["https://dev-diligence-production.up.railway.app"]
 }
