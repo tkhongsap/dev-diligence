@@ -12,4 +12,3 @@ startCommand = "sh -c 'uvicorn main:app --host 0.0.0.0 --port $PORT --log-level 
 
 [variables]
 CORS_ORIGINS = "https://dev-diligence-production.up.railway.app"
-PORT = "8000"

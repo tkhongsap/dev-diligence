@@ -37,9 +37,8 @@ RUN chmod -R 755 /app/static
 # Switch to non-root user
 USER appuser
 
-# Expose the port
-EXPOSE 8000
+# Expose the port (optional; mainly for documentation purposes)
+EXPOSE ${PORT}
 
 # Start the application
-ENV PORT=8000
 CMD ["python", "start.py"]
