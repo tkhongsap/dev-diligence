@@ -39,9 +39,14 @@ raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
 CORS_ORIGINS = [origin.strip() for origin in raw_origins.replace(';', ',').split(",") if origin.strip()]
 
 # Configure CORS
+origins = [
+    "https://dev-diligence-production.up.railway.app",
+    # Add any other allowed origins
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS + ["https://dev-diligence-production.up.railway.app"],  # Add Railway URL explicitly
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

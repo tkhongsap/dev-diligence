@@ -1,27 +1,13 @@
 [build]
-builder = "nixpacks"
-buildCommand = """
-  echo "Starting build process..." && \
-  cd dev-diligence && \
-  npm install && \
-  npm run build && \
-  echo "Frontend build complete. Contents of out directory:" && \
-  ls -la out/ && \
-  mkdir -p ../backend/static && \
-  cp -r out/* ../backend/static/ && \
-  echo "Files copied to backend/static. Contents:" && \
-  cd ../backend && \
-  ls -la static/ && \
-  echo "Build process complete"
-"""
+builder = "DOCKERFILE"
+dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-startCommand = "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
-restartPolicyType = "ON_FAILURE"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
 
-# Add the corrected CORS_ORIGINS environment variable
-environment = {
-  CORS_ORIGINS = ["https://dev-diligence-production.up.railway.app"]
-}
+[variables]
+CORS_ORIGINS = "https://dev-diligence-production.up.railway.app"

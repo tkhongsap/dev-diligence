@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create and set permissions for static directory
-RUN mkdir -p static && chown -R appuser:appuser /app
+RUN mkdir -p /app/static && chown -R appuser:appuser /app/static
 
 # Copy application files
 COPY . .
@@ -23,12 +23,12 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Make port configurable but default to 8000
+# Make port configurable via environment variable
 ENV PORT=8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT}/health || exit 1
 
-# Start the application
+# Start the application with the correct port
 CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
