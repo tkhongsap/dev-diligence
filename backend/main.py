@@ -34,13 +34,14 @@ os.makedirs("static", exist_ok=True)
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Get CORS origins from environment variable
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Get CORS origins from environment variable and clean it
+raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+CORS_ORIGINS = [origin.strip() for origin in raw_origins.replace(';', ',').split(",")]
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=CORS_ORIGINS + ["https://dev-diligence-production.up.railway.app"],  # Add Railway URL explicitly
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,9 +62,20 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting application...")
-    logger.info(f"Static directory exists: {os.path.exists('static')}")
-    if os.path.exists("static"):
-        logger.info(f"Static directory contents: {os.listdir('static')}")
+    logger.info(f"Current working directory: {os.getcwd()}")
+    
+    # Check static directory
+    static_dir = "static"
+    logger.info(f"Static directory exists: {os.path.exists(static_dir)}")
+    if os.path.exists(static_dir):
+        files = os.listdir(static_dir)
+        logger.info(f"Static directory contents: {files}")
+        if not files:
+            logger.warning("Static directory is empty!")
+            logger.info("Creating test file...")
+            with open(os.path.join(static_dir, "test.txt"), "w") as f:
+                f.write("Test file to verify write permissions")
+    
     logger.info(f"CORS origins: {CORS_ORIGINS}")
     logger.info(f"OpenAI model: {openai_model}")
     logger.info(f"Port: {port}")

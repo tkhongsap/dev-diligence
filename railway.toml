@@ -1,13 +1,18 @@
 [build]
 builder = "nixpacks"
 buildCommand = """
+  echo "Starting build process..." && \
   cd dev-diligence && \
   npm install && \
   npm run build && \
+  echo "Frontend build complete. Contents of out directory:" && \
+  ls -la out/ && \
   mkdir -p ../backend/static && \
   cp -r out/* ../backend/static/ && \
+  echo "Files copied to backend/static. Contents:" && \
   cd ../backend && \
-  ls -la static/
+  ls -la static/ && \
+  echo "Build process complete"
 """
 
 [deploy]
