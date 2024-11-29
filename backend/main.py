@@ -9,12 +9,16 @@ from utils.schemas import CODE_ANALYSIS_SCHEMA
 from utils.templates import get_root_html
 import os
 import json
+import httpx
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    http_client=httpx.Client()
+)
 
 app = FastAPI(
     title="Code Review API",
@@ -46,6 +50,8 @@ openai_model = os.getenv("OPENAI_API_MODEL")
 # Validate API key and model are loaded
 if not openai_model:
     raise ValueError("No OpenAI model specified. Please check your .env file.")
+
+port = int(os.getenv("PORT", 8000))  # Get port from environment or default to 8000
 
 @app.get("/")
 async def root():
@@ -227,3 +233,7 @@ async def serve_frontend(full_path: str):
         return FileResponse(static_file)
     # If file not found, serve index.html for client-side routing
     return FileResponse("static/index.html") 
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True) 
