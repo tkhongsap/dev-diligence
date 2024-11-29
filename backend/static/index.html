@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Diligence</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        .status {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dev Diligence API</h1>
+    <div class="status">
+        <h2>Status: Online</h2>
+        <p>The API is running successfully. You can now use the endpoints for code analysis.</p>
+    </div>
+    <div>
+        <h2>Available Endpoints:</h2>
+        <ul>
+            <li><code>/health</code> - Check API health</li>
+            <li><code>/api-docs</code> - API documentation</li>
+            <li><code>/models</code> - List available OpenAI models</li>
+            <li><code>/analyze-code</code> - Submit code for analysis</li>
+        </ul>
+    </div>
+</body>
+</html> 

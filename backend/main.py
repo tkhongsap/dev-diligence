@@ -29,24 +29,21 @@ app = FastAPI(
 )
 
 # Create static directory if it doesn't exist
-os.makedirs("static", exist_ok=True)
+static_dir = "static"
+os.makedirs(static_dir, exist_ok=True)
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Get CORS origins from environment variable and clean it
-raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-CORS_ORIGINS = [origin.strip() for origin in raw_origins.replace(';', ',').split(",") if origin.strip()]
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Configure CORS
-origins = [
+CORS_ORIGINS = [
     "https://dev-diligence-production.up.railway.app",
-    # Add any other allowed origins
+    "http://localhost:3000",  # For local development
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,16 +67,32 @@ async def startup_event():
     logger.info(f"Current working directory: {os.getcwd()}")
     
     # Check static directory
-    static_dir = "static"
     logger.info(f"Static directory exists: {os.path.exists(static_dir)}")
     if os.path.exists(static_dir):
-        files = os.listdir(static_dir)
-        logger.info(f"Static directory contents: {files}")
-        if not files:
-            logger.warning("Static directory is empty!")
-            logger.info("Creating test file...")
-            with open(os.path.join(static_dir, "test.txt"), "w") as f:
-                f.write("Test file to verify write permissions")
+        try:
+            files = os.listdir(static_dir)
+            logger.info(f"Static directory contents: {files}")
+            if not files:
+                logger.warning("Static directory is empty!")
+                # Create index.html if it doesn't exist
+                index_path = os.path.join(static_dir, "index.html")
+                if not os.path.exists(index_path):
+                    logger.info("Creating default index.html...")
+                    with open(index_path, "w") as f:
+                        f.write("""
+                        <!DOCTYPE html>
+                        <html>
+                            <head>
+                                <title>Dev Diligence</title>
+                            </head>
+                            <body>
+                                <h1>Dev Diligence API</h1>
+                                <p>API is running successfully.</p>
+                            </body>
+                        </html>
+                        """.strip())
+        except Exception as e:
+            logger.error(f"Error accessing static directory: {str(e)}")
     
     logger.info(f"CORS origins: {CORS_ORIGINS}")
     logger.info(f"OpenAI model: {openai_model}")
