@@ -1,7 +1,17 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd dev-diligence && npm install && npm run build && mkdir -p ../backend/static && cp -r out/* ../backend/static/"
+buildCommand = """
+  cd dev-diligence && \
+  npm install && \
+  npm run build && \
+  mkdir -p ../backend/static && \
+  cp -r out/* ../backend/static/ && \
+  cd ../backend && \
+  ls -la static/
+"""
 
 [deploy]
-startCommand = "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+startCommand = "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
 restartPolicyType = "ON_FAILURE"
+healthcheckPath = "/health"
+healthcheckTimeout = 300

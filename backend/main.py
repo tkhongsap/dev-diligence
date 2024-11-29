@@ -11,6 +11,7 @@ import os
 import json
 import httpx
 from datetime import datetime
+import logging
 
 # Load environment variables from .env file
 load_dotenv()
@@ -54,33 +55,34 @@ if not openai_model:
 
 port = int(os.getenv("PORT", 8000))  # Get port from environment or default to 8000
 
-@app.get("/")
-async def root():
-    print("Serving root route")
-    try:
-        print(f"Current directory: {os.getcwd()}")
-        print(f"Static directory exists: {os.path.exists('static')}")
-        if os.path.exists("static"):
-            print(f"Static directory contents: {os.listdir('static')}")
-        
-        if not os.path.exists("static/index.html"):
-            print("Error: static/index.html not found")
-            print("Contents of static directory:", os.listdir("static"))
-            return JSONResponse(
-                content={"error": "Frontend files not found"},
-                status_code=500
-            )
-        return FileResponse("static/index.html")
-    except Exception as e:
-        print(f"Error serving index.html: {str(e)}")
-        return JSONResponse(
-            content={"error": str(e)},
-            status_code=500
-        )
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting application...")
+    logger.info(f"Static directory exists: {os.path.exists('static')}")
+    if os.path.exists("static"):
+        logger.info(f"Static directory contents: {os.listdir('static')}")
+    logger.info(f"CORS origins: {CORS_ORIGINS}")
+    logger.info(f"OpenAI model: {openai_model}")
+    logger.info(f"Port: {port}")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 @app.get("/api-docs", response_class=HTMLResponse)
 async def api_docs():
     return get_root_html()
+
+@app.get("/models")
+async def list_models():
+    try:
+        models = client.models.list()
+        return {"available_models": [model.id for model in models]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze-code/")
 async def analyze_code(
@@ -222,26 +224,21 @@ async def analyze_code(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/models")
-async def list_models():
-    try:
-        models = client.models.list()
-        return {"available_models": [model.id for model in models]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/")
+async def root():
+    return serve_frontend("")
 
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
+    print(f"Serving path: {full_path}")
     # First try to serve from static directory
     static_file = f"static/{full_path}"
     if os.path.exists(static_file):
+        print(f"Serving static file: {static_file}")
         return FileResponse(static_file)
     # If file not found, serve index.html for client-side routing
-    return FileResponse("static/index.html") 
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    print("Falling back to index.html")
+    return FileResponse("static/index.html")
 
 if __name__ == "__main__":
     import uvicorn
