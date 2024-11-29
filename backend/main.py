@@ -63,7 +63,8 @@ openai_model = os.getenv("OPENAI_API_MODEL")
 if not openai_model:
     raise ValueError("No OpenAI model specified. Please check your .env file.")
 
-port = int(os.getenv("PORT", 8000))  # Get port from environment or default to 8000
+# Get port from environment or default to 8000 to match Dockerfile
+port = int(os.getenv("PORT", 8000))
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
