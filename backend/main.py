@@ -36,7 +36,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Get CORS origins from environment variable and clean it
 raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-CORS_ORIGINS = [origin.strip() for origin in raw_origins.replace(';', ',').split(",")]
+CORS_ORIGINS = [origin.strip() for origin in raw_origins.replace(';', ',').split(",") if origin.strip()]
 
 # Configure CORS
 app.add_middleware(
@@ -254,4 +254,4 @@ async def serve_frontend(full_path: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True) 
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
