@@ -11,7 +11,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl tzdata && rm -rf /var/lib/apt/lists/*
+
+# Set timezone to UTC
+ENV TZ=UTC
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser
@@ -36,9 +39,6 @@ RUN chmod -R 755 /app/static
 
 # Switch to non-root user
 USER appuser
-
-# Expose the port (optional; mainly for documentation purposes)
-EXPOSE ${PORT}
 
 # Start the application
 CMD ["python", "start.py"]

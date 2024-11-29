@@ -37,11 +37,14 @@ app = FastAPI(
 
 # Create static directory if it doesn't exist
 static_dir = "static"
-os.makedirs(static_dir, exist_ok=True)
+os.makedirs(os.path.join(static_dir, "_next/static"), exist_ok=True)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
-app.mount("/_next/static", StaticFiles(directory=os.path.join(static_dir, "_next/static")), name="next-static")
+try:
+    app.mount("/_next/static", StaticFiles(directory=os.path.join(static_dir, "_next/static")), name="next-static")
+except RuntimeError as e:
+    logger.warning(f"Static files directory not found: {e}")
 
 # Configure CORS
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "https://dev-diligence-production.up.railway.app").split(",")

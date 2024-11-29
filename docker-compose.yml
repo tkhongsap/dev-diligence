@@ -9,22 +9,27 @@ services:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_API_MODEL=gpt-4o-mini
-      - CORS_ORIGINS=http://localhost:3000
+      - OPENAI_API_MODEL=${OPENAI_API_MODEL}
+      - CORS_ORIGINS=${CORS_ORIGINS}
     volumes:
       - ./backend:/app
+      - backend_static:/app/static
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build:
-      context: ./dev-diligence
+      context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     volumes:
-      - ./dev-diligence:/app
+      - ./frontend:/app
       - /app/node_modules
       - /app/.next
-    command: npm run dev 
+      - backend_static:/app/out
+    command: npm run dev
+
+volumes:
+  backend_static:
