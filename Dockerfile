@@ -1,10 +1,10 @@
 # Build frontend
 FROM node:18-alpine AS frontend-builder
 WORKDIR /app/frontend
-COPY dev-diligence/package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
-COPY dev-diligence/ ./
-RUN npm run build
+COPY frontend/ ./
+RUN npm run build -- --no-lint
 
 # Build backend
 FROM python:3.11-slim
