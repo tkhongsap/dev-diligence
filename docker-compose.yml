@@ -7,10 +7,8 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "8000:8000"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_API_MODEL=${OPENAI_API_MODEL}
-      - CORS_ORIGINS=${CORS_ORIGINS}
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend:/app
       - backend_static:/app/static
@@ -23,7 +21,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules
