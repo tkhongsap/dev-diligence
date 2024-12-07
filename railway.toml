@@ -19,3 +19,4 @@ startupProbe = {
 
 [variables]
 CORS_ORIGINS = "https://dev-diligence-production.up.railway.app"
+NEXT_PUBLIC_API_URL = "https://dev-diligence-production.up.railway.app"

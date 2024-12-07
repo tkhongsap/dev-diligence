@@ -44,7 +44,9 @@ except RuntimeError as e:
     logger.warning(f"Static files directory not found: {e}")
 
 # Configure CORS
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,https://dev-diligence-production.up.railway.app").split(",")
+is_production = os.getenv("RAILWAY_ENVIRONMENT") == "production"
+default_cors = "https://dev-diligence-production.up.railway.app" if is_production else "http://localhost:3000"
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", default_cors).split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -144,7 +146,9 @@ async def analyze_code(
     code: str = Form(default=None)
 ):
     logger.info("Received analyze-code request")
-    logger.info(f"Request form data: file={file is not None}, code={code is not None}")
+    logger.info(f"Request headers: {request.headers}")
+    logger.info(f"Request origin: {request.headers.get('origin')}")
+    logger.info(f"CORS_ORIGINS: {CORS_ORIGINS}")
     
     try:
         # Get code content

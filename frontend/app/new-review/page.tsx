@@ -56,8 +56,10 @@ const handleSubmitCode = async (code: string | File) => {
   try {
     const formData = new FormData()
     
-    // Log request details
+    // Enhanced logging
     console.log('\n=== Submitting Code Review ===')
+    console.log('Environment:', process.env.NODE_ENV)
+    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL)
     console.log('Request type:', code instanceof File ? 'FILE' : 'CODE')
     
     if (code instanceof File) {
@@ -66,14 +68,15 @@ const handleSubmitCode = async (code: string | File) => {
       formData.append('code', code)
     }
 
-    // Fix the URL construction
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const url = `${baseUrl}/analyze-code/`
     console.log('Sending request to:', url)
     
+    // Add CORS headers
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
+      credentials: 'include',
     })
     
     console.log('Response received:', {
