@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Upload, Code, Settings, X } from 'lucide-react'
+import { ArrowLeft, Upload, Code, Settings } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,10 +42,6 @@ const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
    const selectedFiles = Array.from(e.target.files)
    setFiles(prev => [...prev, ...selectedFiles])
  }
-}
-
-const removeFile = (index: number) => {
- setFiles(prev => prev.filter((_, i) => i !== index))
 }
 
 const handleSubmitCode = async (code: string | File) => {
@@ -231,6 +227,21 @@ return (
                      {error}
                    </div>
                  )}
+
+                 <div className="mt-2 space-y-2">
+                   {files.map((file, index) => (
+                     <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                       <span className="text-sm">{file.name}</span>
+                       <button
+                         onClick={() => handleFileRemove(index)}
+                         className="text-gray-500 hover:text-red-500"
+                         aria-label="Remove file"
+                       >
+                         ×
+                       </button>
+                     </div>
+                   ))}
+                 </div>
 
                  <div className="flex flex-col sm:flex-row justify-end gap-4">
                    <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
