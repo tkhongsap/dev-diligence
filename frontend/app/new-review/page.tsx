@@ -69,7 +69,7 @@ const handleSubmitCode = async (code: string | File) => {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const url = `${baseUrl}/analyze-code/`
+    const url = `${baseUrl}/api/analyze-code/`
     console.log('Sending request to:', url)
     
     try {
@@ -81,6 +81,9 @@ const handleSubmitCode = async (code: string | File) => {
         },
         mode: 'cors',
       })
+      
+      // Add response URL logging
+      console.log('Response from URL:', response.url)
       
       // Enhanced error logging
       if (!response.ok) {

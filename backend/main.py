@@ -12,6 +12,7 @@ import httpx
 import logging
 from pydantic import BaseModel
 from typing import List, Literal
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -82,6 +83,12 @@ class CodeAnalysis(BaseModel):
     suggestions: List[Suggestion]
     improved_code: str
 
+# Add trusted hosts middleware
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"]  # In production, you might want to restrict this
+)
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting application...")
@@ -139,7 +146,7 @@ async def list_models():
         logger.error(f"Error listing models: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze-code/")
+@app.post("/api/analyze-code/")
 async def analyze_code(
     request: Request,
     file: UploadFile = File(default=None),
@@ -234,6 +241,10 @@ async def root():
 
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
+    # Don't handle API routes
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not Found")
+        
     try:
         logger.info(f"Serving path: {full_path}")
         # First try to serve from static directory
