@@ -72,39 +72,43 @@ const handleSubmitCode = async (code: string | File) => {
     const url = `${baseUrl}/analyze-code/`
     console.log('Sending request to:', url)
     
-    // Add CORS headers
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-      credentials: 'include',
-    })
-    
-    console.log('Response received:', {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
-    })
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+      })
+      
+      // Enhanced error logging
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          headers: Object.fromEntries(response.headers.entries())
+        })
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Error response body:', errorText)
-      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+      responseData = await response.json()
+      console.log('Analysis result:', responseData)
+      
+      localStorage.setItem('codeAnalysis', JSON.stringify(responseData))
+      router.push('/review-result')
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError)
+      if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
+        throw new Error('Could not connect to the backend server. Please check if the API URL is correct and the server is running.')
+      }
+      throw fetchError
     }
-
-    responseData = await response.json()
-    console.log('Analysis result:', responseData)
-    
-    localStorage.setItem('codeAnalysis', JSON.stringify(responseData))
-    router.push('/review-result')
-
   } catch (err) {
     console.error('Error details:', err)
-    if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
-      setError('Could not connect to the backend server. Is it running?')
-    } else {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    }
+    setError(err instanceof Error ? err.message : 'An error occurred')
   } finally {
     setIsLoading(false)
   }

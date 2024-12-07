@@ -46,7 +46,7 @@ except RuntimeError as e:
 # Configure CORS
 is_production = os.getenv("RAILWAY_ENVIRONMENT") == "production"
 default_cors = "https://dev-diligence-production.up.railway.app" if is_production else "http://localhost:3000"
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", default_cors).split(",")
+CORS_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ORIGINS", default_cors).split(",")]
 
 app.add_middleware(
     CORSMiddleware,
