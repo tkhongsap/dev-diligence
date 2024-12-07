@@ -49,6 +49,9 @@ is_production = os.getenv("RAILWAY_ENVIRONMENT") == "production"
 default_cors = "https://dev-diligence-production.up.railway.app" if is_production else "http://localhost:3000"
 CORS_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ORIGINS", default_cors).split(",")]
 
+logger.info(f"CORS Origins configured: {CORS_ORIGINS}")
+logger.info(f"Production mode: {is_production}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,

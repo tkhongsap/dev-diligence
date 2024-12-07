@@ -68,52 +68,48 @@ const handleSubmitCode = async (code: string | File) => {
       formData.append('code', code)
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL
+    if (!baseUrl) {
+      throw new Error('API URL not configured. Please check environment variables.')
+    }
     const url = `${baseUrl}/api/analyze-code/`
     console.log('Sending request to:', url)
     
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json',
-        },
-        mode: 'cors',
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+    })
+    
+    // Add response URL logging
+    console.log('Response from URL:', response.url)
+    
+    // Enhanced error logging
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        headers: Object.fromEntries(response.headers.entries())
       })
-      
-      // Add response URL logging
-      console.log('Response from URL:', response.url)
-      
-      // Enhanced error logging
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText,
-          headers: Object.fromEntries(response.headers.entries())
-        })
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
-      }
-
-      responseData = await response.json()
-      console.log('Analysis result:', responseData)
-      
-      localStorage.setItem('codeAnalysis', JSON.stringify(responseData))
-      router.push('/review-result')
-    } catch (fetchError) {
-      console.error('Fetch error:', fetchError)
-      if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
-        throw new Error('Could not connect to the backend server. Please check if the API URL is correct and the server is running.')
-      }
-      throw fetchError
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
     }
-  } catch (err) {
-    console.error('Error details:', err)
-    setError(err instanceof Error ? err.message : 'An error occurred')
-  } finally {
-    setIsLoading(false)
+
+    responseData = await response.json()
+    console.log('Analysis result:', responseData)
+    
+    localStorage.setItem('codeAnalysis', JSON.stringify(responseData))
+    router.push('/review-result')
+  } catch (fetchError) {
+    console.error('Fetch error:', fetchError)
+    if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
+      throw new Error('Could not connect to the backend server. Please check if the API URL is correct and the server is running.')
+    }
+    throw fetchError
   }
 }
 
