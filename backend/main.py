@@ -9,6 +9,7 @@ from utils.templates import get_root_html
 import os
 import json
 import httpx
+import logging
 from pydantic import BaseModel
 from typing import List, Literal
 
@@ -96,8 +97,30 @@ async def startup_event():
 
 @app.get("/health")
 async def health_check():
-    logger.info("Health check endpoint called")
-    return {"status": "healthy"}
+    try:
+        # Check if OpenAI client is configured
+        if not client.api_key:
+            return JSONResponse(
+                status_code=503,
+                content={"status": "unhealthy", "detail": "OpenAI API key not configured"}
+            )
+        
+        # Verify static directory exists
+        if not os.path.exists(static_dir):
+            return JSONResponse(
+                status_code=503,
+                content={"status": "unhealthy", "detail": "Static directory not found"}
+            )
+            
+        logger.info("Health check passed")
+        return {"status": "healthy", "version": "1.0.0"}
+        
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "detail": str(e)}
+        )
 
 @app.get("/api-docs", response_class=HTMLResponse)
 async def api_docs():

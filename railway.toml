@@ -6,9 +6,18 @@ dockerfilePath = "Dockerfile"
 healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
-numReplicas = 1
-startCommand = "sh -c 'uvicorn main:app --host 0.0.0.0 --port $PORT --log-level debug'"
+restartPolicyMaxRetries = 5
+startCommand = "python -c \"import os; port = int(os.getenv('PORT', '8000')); import uvicorn; uvicorn.run('main:app', host='0.0.0.0', port=port, workers=1, timeout_keep_alive=75)\""
+
+# You might want to increase the timeout and add an initial delay
+# to give the application more time to start up:
+startupProbe = {
+    path = "/health"
+    initialDelaySeconds = 10
+    periodSeconds = 5
+    timeoutSeconds = 3
+    failureThreshold = 3
+}
 
 [variables]
 CORS_ORIGINS = "https://dev-diligence-production.up.railway.app"
