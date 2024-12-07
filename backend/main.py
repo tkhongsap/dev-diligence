@@ -5,13 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from openai import OpenAI
-from utils.schemas import CODE_ANALYSIS_SCHEMA
 from utils.templates import get_root_html
 import os
 import json
 import httpx
-from datetime import datetime
-import logging
 from pydantic import BaseModel
 from typing import List, Literal
 
@@ -26,10 +23,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Initialize OpenAI client
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    http_client=httpx.Client()
-)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI(
     title="Code Review API",
