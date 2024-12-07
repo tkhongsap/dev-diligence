@@ -19,5 +19,3 @@ startupProbe = {
 
 [variables]
 CORS_ORIGINS = "https://dev-diligence-production.up.railway.app"
-
-</```rewritten_file>
