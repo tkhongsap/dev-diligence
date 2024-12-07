@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +12,8 @@ import json
 import httpx
 from datetime import datetime
 import logging
+from pydantic import BaseModel
+from typing import List, Literal
 
 # Configure logging
 logging.basicConfig(
@@ -47,7 +49,7 @@ except RuntimeError as e:
     logger.warning(f"Static files directory not found: {e}")
 
 # Configure CORS
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "https://dev-diligence-production.up.railway.app").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,https://dev-diligence-production.up.railway.app").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,6 +72,19 @@ port = int(os.getenv("PORT", 8000))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Define the structure for suggestions
+class Suggestion(BaseModel):
+    type: Literal["improvement", "warning", "error"]
+    message: str
+
+# Define the structure for code analysis
+class CodeAnalysis(BaseModel):
+    overall_score: float
+    code_quality: float
+    performance: float
+    suggestions: List[Suggestion]
+    improved_code: str
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting application...")
@@ -77,6 +92,13 @@ async def startup_event():
     logger.info(f"Environment PORT: {os.getenv('PORT')}")
     logger.info(f"Static directory exists: {os.path.exists(static_dir)}")
     logger.info(f"CORS origins: {CORS_ORIGINS}")
+    
+    # Verify OpenAI API key
+    try:
+        models = client.models.list()
+        logger.info("✓ OpenAI API key verified successfully")
+    except Exception as e:
+        logger.error(f"✗ OpenAI API key verification failed: {str(e)}")
 
 @app.get("/health")
 async def health_check():
@@ -91,148 +113,89 @@ async def api_docs():
 async def list_models():
     try:
         models = client.models.list()
-        return {"available_models": [model.id for model in models]}
+        model_list = [model.id for model in models]
+        logger.info(f"Available models: {model_list}")
+        return {"available_models": model_list}
     except Exception as e:
+        logger.error(f"Error listing models: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze-code/")
 async def analyze_code(
+    request: Request,
     file: UploadFile = File(default=None),
     code: str = Form(default=None)
 ):
-    print("\n=== New Code Analysis Request ===")
-    print("Request type:", "FILE" if file else "CODE" if code else "NONE")
-    
-    if file:
-        print(f"File details:")
-        print(f"- Filename: {file.filename}")
-        print(f"- Content type: {file.content_type}")
-        print(f"- File size: {len(await file.read())} bytes")
-        await file.seek(0)  # Reset file pointer after reading
-    
-    if code:
-        print("Code details:")
-        print(f"- Length: {len(code)} characters")
-        print(f"- Preview: {code[:100]}...")
+    logger.info("Received analyze-code request")
+    logger.info(f"Request form data: file={file is not None}, code={code is not None}")
     
     try:
         # Get code content
         if file:
-            try:
-                code_content = (await file.read()).decode('utf-8')
-                print("✓ Successfully read file content")
-            except UnicodeDecodeError:
-                print("✗ Error: File is not a valid text file")
-                raise HTTPException(status_code=400, detail="File must be a text file")
+            code_content = (await file.read()).decode('utf-8')
+            logger.info("Successfully read file content")
         elif code:
             code_content = code
-            print("✓ Using direct code input")
+            logger.info("Using direct code input")
         else:
-            print("✗ Error: No code provided")
             raise HTTPException(status_code=400, detail="No code provided")
 
-        # Validate OpenAI settings
-        if not openai_model:
-            print("✗ Error: OpenAI model not configured")
-            raise HTTPException(status_code=500, detail="OpenAI model not configured")
-
-        print(f"✓ Using OpenAI model: {openai_model}")
-
+        # Make OpenAI API call
         try:
-            # Create system message with instructions
-            system_message = """You are a code review assistant. Analyze the provided code and return a detailed review in JSON format.
-            Focus on code quality, performance, and provide actionable suggestions. Score each aspect out of 10.
-            Your response must strictly follow the specified JSON schema."""
+            system_message = """You are a code review assistant. Analyze the provided code and return a JSON response with exactly this structure:
+            {
+                "overall_score": (number between 0-10),
+                "code_quality": (number between 0-10),
+                "performance": (number between 0-10),
+                "suggestions": [
+                    {
+                        "type": "improvement" or "warning" or "error",
+                        "message": "detailed suggestion"
+                    }
+                ],
+                "improved_code": "improved version of the code"
+            }
+            Respond only with the JSON, no other text."""
 
-            # Make OpenAI API call
-            print(f"Making API call with model: {openai_model}")
             response = client.chat.completions.create(
                 model=openai_model,
                 messages=[
                     {"role": "system", "content": system_message},
-                    {"role": "user", "content": f"Please analyze this code:\n\n{code_content}"}
+                    {"role": "user", "content": f"Review this code:\n\n{code_content}"}
                 ],
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "code_analysis_schema",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "overall_score": {
-                                    "type": "number",
-                                    "description": "Overall code quality score out of 10"
-                                },
-                                "code_quality": {
-                                    "type": "number",
-                                    "description": "Code readability and maintainability score out of 10"
-                                },
-                                "performance": {
-                                    "type": "number",
-                                    "description": "Code performance and efficiency score out of 10"
-                                },
-                                "suggestions": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string",
-                                                "enum": ["improvement", "warning", "error"]
-                                            },
-                                            "message": {
-                                                "type": "string",
-                                                "description": "Detailed suggestion message"
-                                            }
-                                        },
-                                        "required": ["type", "message"]
-                                    }
-                                },
-                                "improved_code": {
-                                    "type": "string",
-                                    "description": "Suggested improved version of the code"
-                                }
-                            },
-                            "required": ["overall_score", "code_quality", "performance", "suggestions"]
-                        }
-                    }
-                },
-                temperature=0.5
+                temperature=0.3
             )
-            print("API call successful")
-        except Exception as e:
-            error_msg = str(e)
-            if "authentication" in error_msg.lower():
-                print(f"Authentication Error: {error_msg}")
-                raise HTTPException(status_code=401, detail=error_msg)
-            elif "api" in error_msg.lower():
-                print(f"API Error: {error_msg}")
-                raise HTTPException(status_code=502, detail=error_msg)
-            else:
-                print(f"Unexpected error: {error_msg}")
-                raise HTTPException(status_code=500, detail=error_msg)
-
-        # Parse and validate response
-        analysis = json.loads(response.choices[0].message.content)
-        
-        # Ensure all required fields are present
-        required_fields = ["overall_score", "code_quality", "performance", "suggestions"]
-        missing_fields = [field for field in required_fields if field not in analysis]
-        if missing_fields:
-            raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
-
-        # Format scores
-        for field in ["overall_score", "code_quality", "performance"]:
-            analysis[field] = round(float(analysis[field]), 1)
-
-        return JSONResponse(
-            content=analysis,
-            status_code=200
-        )
+            
+            # Parse the response
+            try:
+                analysis = json.loads(response.choices[0].message.content)
+                logger.info("Successfully parsed response")
+                
+                # Validate response structure
+                required_fields = ["overall_score", "code_quality", "performance", "suggestions", "improved_code"]
+                for field in required_fields:
+                    if field not in analysis:
+                        raise ValueError(f"Missing required field: {field}")
+                
+                # Round numeric scores
+                for key in ["overall_score", "code_quality", "performance"]:
+                    analysis[key] = round(float(analysis[key]), 1)
+                
+                return JSONResponse(content=analysis, status_code=200)
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse JSON response: {e}")
+                logger.error(f"Raw response: {response.choices[0].message.content}")
+                raise HTTPException(status_code=500, detail="Invalid response format from AI model")
+            
+        except Exception as api_error:
+            logger.error(f"OpenAI API error: {str(api_error)}")
+            raise HTTPException(status_code=500, detail=f"OpenAI API error: {str(api_error)}")
 
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")

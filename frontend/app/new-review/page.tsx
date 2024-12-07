@@ -62,29 +62,14 @@ const handleSubmitCode = async (code: string | File) => {
     
     if (code instanceof File) {
       formData.append('file', code)
-      console.log('File details:', {
-        name: code.name,
-        type: code.type,
-        size: code.size,
-      })
     } else {
       formData.append('code', code)
-      console.log('Code details:', {
-        length: code.length,
-        preview: code.substring(0, 100) + '...'
-      })
     }
 
-    const url = process.env.NEXT_PUBLIC_API_URL + '/analyze-code/'
+    // Fix the URL construction
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const url = `${baseUrl}/analyze-code/`
     console.log('Sending request to:', url)
-    
-    // Log FormData contents
-    console.log('FormData contents:')
-    Array.from(formData.entries()).forEach(([key, value]) => {
-      console.log(`- ${key}:`, value instanceof File ? 
-        `File(${value.name}, ${value.type}, ${value.size} bytes)` : 
-        `${value.toString().substring(0, 50)}...`)
-    })
     
     const response = await fetch(url, {
       method: 'POST',
