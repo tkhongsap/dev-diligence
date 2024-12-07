@@ -44,6 +44,10 @@ const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
  }
 }
 
+const handleFileRemove = (index: number) => {
+  setFiles(prev => prev.filter((_, i) => i !== index));
+}
+
 const handleSubmitCode = async (code: string | File) => {
   setIsLoading(true)
   setError(null)

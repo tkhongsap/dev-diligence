@@ -1,8 +1,26 @@
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
+
+# Add debugging tools
+RUN apk add --no-cache bash
+
+# Copy package files
 COPY package*.json ./
-RUN npm install
+
+# Install dependencies with verbose logging
+RUN npm install --verbose
+
+# Copy the rest of the application
 COPY . .
-RUN npm run build
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build with verbose logging
+RUN set -x && \
+    echo "Starting build process..." && \
+    ls -la && \
+    npm run build --verbose
 
 CMD ["npm", "start"] 

@@ -5,3 +5,7 @@ __pycache__
 .gitignore
 README.md
 tests/ 
+node_modules
+.next
+.env.local
+npm-debug.log 

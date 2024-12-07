@@ -1,9 +1,12 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
 
-# Don't copy the code in development - we'll use volumes
+# Enable hot reloading for development
+ENV NODE_ENV=development
+EXPOSE 3000
+
 CMD ["npm", "run", "dev"] 
