@@ -51,31 +51,27 @@ const handleFileRemove = (index: number) => {
 const handleSubmitCode = async (code: string | File) => {
   setIsLoading(true)
   setError(null)
-  let responseData;
   
   try {
     const formData = new FormData()
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     
     // Enhanced logging
-    console.log('\n=== Submitting Code Review ===')
-    console.log('Environment:', process.env.NODE_ENV)
-    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL)
-    console.log('Request type:', code instanceof File ? 'FILE' : 'CODE')
+    console.log('=== API Request Details ===')
+    console.log('Base URL:', apiUrl)
+    console.log('Full URL:', `${apiUrl}/api/analyze-code/`)
+    console.log('Content Type:', code instanceof File ? code.type : 'text/plain')
     
     if (code instanceof File) {
       formData.append('file', code)
+      console.log('File name:', code.name)
+      console.log('File size:', code.size)
     } else {
       formData.append('code', code)
+      console.log('Code length:', code.length)
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL
-    if (!baseUrl) {
-      throw new Error('API URL not configured. Please check environment variables.')
-    }
-    const url = `${baseUrl}/api/analyze-code/`
-    console.log('Sending request to:', url)
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${apiUrl}/api/analyze-code/`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -83,33 +79,29 @@ const handleSubmitCode = async (code: string | File) => {
       },
       mode: 'cors',
     })
-    
-    // Add response URL logging
-    console.log('Response from URL:', response.url)
-    
-    // Enhanced error logging
+
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Error response:', {
+      console.error('API Error Response:', {
         status: response.status,
         statusText: response.statusText,
-        body: errorText,
-        headers: Object.fromEntries(response.headers.entries())
+        url: response.url,
+        headers: Object.fromEntries(response.headers),
+        body: errorText
       })
-      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+      throw new Error(`API Error: ${response.status} - ${errorText}`)
     }
 
-    responseData = await response.json()
-    console.log('Analysis result:', responseData)
+    const data = await response.json()
+    console.log('API Success Response:', data)
     
-    localStorage.setItem('codeAnalysis', JSON.stringify(responseData))
+    localStorage.setItem('codeAnalysis', JSON.stringify(data))
     router.push('/review-result')
-  } catch (fetchError) {
-    console.error('Fetch error:', fetchError)
-    if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
-      throw new Error('Could not connect to the backend server. Please check if the API URL is correct and the server is running.')
-    }
-    throw fetchError
+  } catch (error) {
+    console.error('API Call Error:', error)
+    throw error
+  } finally {
+    setIsLoading(false)
   }
 }
 
@@ -130,7 +122,14 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     }
   } catch (err) {
     console.error('Submit error:', err)
-    setError('Failed to submit code for review')
+    // Add more detailed error message
+    if (err instanceof Error) {
+      setError(`Failed to submit code for review: ${err.message}`)
+    } else {
+      setError('Failed to submit code for review')
+    }
+  } finally {
+    setIsLoading(false)  // Make sure to reset loading state
   }
 }
 

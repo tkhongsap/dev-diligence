@@ -2,7 +2,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Add debugging tools
-RUN apk add --no-cache bash
+RUN apk add --no-cache bash curl
 
 # Copy package files
 COPY package*.json ./
@@ -26,5 +26,9 @@ RUN set -x && \
 
 # Expose the port
 EXPOSE 8080
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/ || exit 1
 
 CMD ["npm", "start"] 
