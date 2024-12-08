@@ -81,8 +81,13 @@ class Suggestion(BaseModel):
 # Define the structure for code analysis
 class CodeAnalysis(BaseModel):
     overall_score: float
-    code_quality: float
-    performance: float
+    correctness_functionality: float
+    code_quality_maintainability: float
+    performance_efficiency: float
+    security_vulnerability: float
+    code_consistency_style: float
+    scalability_extensibility: float
+    error_handling_robustness: float
     suggestions: List[Suggestion]
     improved_code: str
 
@@ -176,8 +181,13 @@ async def analyze_code(
             system_message = """You are a code review assistant. Analyze the provided code and return a JSON response with exactly this structure:
             {
                 "overall_score": (number between 0-10),
-                "code_quality": (number between 0-10),
-                "performance": (number between 0-10),
+                "correctness_functionality": (number between 0-10),
+                "code_quality_maintainability": (number between 0-10),
+                "performance_efficiency": (number between 0-10),
+                "security_vulnerability": (number between 0-10),
+                "code_consistency_style": (number between 0-10),
+                "scalability_extensibility": (number between 0-10),
+                "error_handling_robustness": (number between 0-10),
                 "suggestions": [
                     {
                         "type": "improvement" or "warning" or "error",
@@ -186,6 +196,16 @@ async def analyze_code(
                 ],
                 "improved_code": "improved version of the code"
             }
+
+            For each score, consider the following:
+            - correctness_functionality: Does the code work as intended and follow logical patterns?
+            - code_quality_maintainability: How readable and maintainable is the code?
+            - performance_efficiency: How well does the code perform and use resources?
+            - security_vulnerability: Are there any security concerns or best practices not followed?
+            - code_consistency_style: Does the code follow consistent styling and patterns?
+            - scalability_extensibility: How well can the code scale and be extended?
+            - error_handling_robustness: How well does the code handle errors and edge cases?
+
             Respond only with the JSON, no other text."""
 
             response = client.chat.completions.create(
@@ -203,13 +223,13 @@ async def analyze_code(
                 logger.info("Successfully parsed response")
                 
                 # Validate response structure
-                required_fields = ["overall_score", "code_quality", "performance", "suggestions", "improved_code"]
+                required_fields = ["overall_score", "correctness_functionality", "code_quality_maintainability", "performance_efficiency", "security_vulnerability", "code_consistency_style", "scalability_extensibility", "error_handling_robustness", "suggestions", "improved_code"]
                 for field in required_fields:
                     if field not in analysis:
                         raise ValueError(f"Missing required field: {field}")
                 
                 # Round numeric scores
-                for key in ["overall_score", "code_quality", "performance"]:
+                for key in ["overall_score", "correctness_functionality", "code_quality_maintainability", "performance_efficiency", "security_vulnerability", "code_consistency_style", "scalability_extensibility", "error_handling_robustness"]:
                     analysis[key] = round(float(analysis[key]), 1)
                 
                 return JSONResponse(content=analysis, status_code=200)

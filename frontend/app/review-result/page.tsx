@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/badge"
-import { ArrowLeft, Bell, User, Menu, Star, CheckCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Bell, User, Menu, Star, CheckCircle, AlertCircle, Shield, Brush, Scale, LucideIcon } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 interface Suggestion {
@@ -15,11 +15,81 @@ interface Suggestion {
 
 interface Analysis {
   overall_score: number
-  code_quality: number
-  performance: number
+  correctness_functionality: number
+  code_quality_maintainability: number
+  performance_efficiency: number
+  security_vulnerability: number
+  code_consistency_style: number
+  scalability_extensibility: number
+  error_handling_robustness: number
   suggestions: Suggestion[]
   improved_code?: string | null
 }
+
+const getScoreColors = (score: number) => {
+  if (score >= 7) {
+    return {
+      card: "from-green-50/50",
+      text: "text-green-600",
+      progress: "bg-green-500",
+      icon: "text-green-500"
+    }
+  } else if (score >= 5) {
+    return {
+      card: "from-yellow-50/50",
+      text: "text-yellow-600",
+      progress: "bg-yellow-500",
+      icon: "text-yellow-500"
+    }
+  } else {
+    return {
+      card: "from-red-50/50",
+      text: "text-red-600",
+      progress: "bg-red-500",
+      icon: "text-red-500"
+    }
+  }
+}
+
+const ScoreCard = ({ 
+  title, 
+  score, 
+  icon: Icon,
+  isOverall = false
+}: { 
+  title: string; 
+  score: number; 
+  icon: LucideIcon;
+  isOverall?: boolean;
+}) => {
+  const colors = getScoreColors(score);
+  
+  return (
+    <Card className={`bg-gradient-to-br ${colors.card} transition-all duration-200 hover:shadow-md`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className={`${isOverall ? 'text-base font-semibold' : 'text-sm font-medium'} text-gray-900`}>
+          {title}
+        </CardTitle>
+        <Icon className={`${isOverall ? 'h-5 w-5' : 'h-4 w-4'} ${colors.icon}`} />
+      </CardHeader>
+      <CardContent>
+        <div className={`flex items-baseline gap-1 ${colors.text}`}>
+          <span className={`${isOverall ? 'text-4xl' : 'text-2xl'} font-bold`}>
+            {score}
+          </span>
+          <span className={`${isOverall ? 'text-lg' : 'text-sm'} font-medium text-gray-500`}>
+            /10
+          </span>
+        </div>
+        <Progress 
+          value={score * 10} 
+          className={`${isOverall ? 'mt-4 h-2.5' : 'mt-3 h-2'}`}
+          indicatorClassName={colors.progress}
+        />
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function ReviewResultPage() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
@@ -95,39 +165,55 @@ export default function ReviewResultPage() {
             </Link>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="bg-gradient-to-br from-blue-50">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Overall Score</CardTitle>
-                <Star className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analysis.overall_score}/10</div>
-                <Progress value={analysis.overall_score * 10} className="mt-2" />
-              </CardContent>
-            </Card>
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <ScoreCard
+                  title="Overall Score"
+                  score={analysis.overall_score}
+                  icon={Star}
+                  isOverall={true}
+                />
+                <ScoreCard
+                  title="Correctness & Functionality"
+                  score={analysis.correctness_functionality}
+                  icon={CheckCircle}
+                />
+                <ScoreCard
+                  title="Quality & Maintainability"
+                  score={analysis.code_quality_maintainability}
+                  icon={CheckCircle}
+                />
+                <ScoreCard
+                  title="Performance & Efficiency"
+                  score={analysis.performance_efficiency}
+                  icon={AlertCircle}
+                />
+              </div>
 
-            <Card className="bg-gradient-to-br from-green-50">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Code Quality</CardTitle>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analysis.code_quality}/10</div>
-                <Progress value={analysis.code_quality * 10} className="mt-2" />
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-yellow-50">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Performance</CardTitle>
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analysis.performance}/10</div>
-                <Progress value={analysis.performance * 10} className="mt-2" />
-              </CardContent>
-            </Card>
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <ScoreCard
+                  title="Security & Vulnerability"
+                  score={analysis.security_vulnerability}
+                  icon={Shield}
+                />
+                <ScoreCard
+                  title="Consistency & Style"
+                  score={analysis.code_consistency_style}
+                  icon={Brush}
+                />
+                <ScoreCard
+                  title="Scalability & Extensibility"
+                  score={analysis.scalability_extensibility}
+                  icon={Scale}
+                />
+                <ScoreCard
+                  title="Error Handling & Robustness"
+                  score={analysis.error_handling_robustness}
+                  icon={Shield}
+                />
+              </div>
+            </div>
           </div>
 
           <Card>
