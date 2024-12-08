@@ -77,6 +77,8 @@ logger = logging.getLogger(__name__)
 # Define the structure for suggestions
 class Suggestion(BaseModel):
     type: Literal["improvement", "warning", "error"]
+    category: Literal["overall", "correctness", "quality", "performance", "security", 
+                     "consistency", "scalability", "error_handling"]
     message: str
 
 # Define the structure for code analysis
@@ -90,7 +92,8 @@ class CodeAnalysis(BaseModel):
     scalability_extensibility: float
     error_handling_robustness: float
     suggestions: List[Suggestion]
-    improved_code: str
+    dimension_explanations: dict | None = None
+    improvement_summary: dict | None = None
 
 # Add trusted hosts middleware
 app.add_middleware(
@@ -196,14 +199,36 @@ async def analyze_code(
                 logger.info("Successfully parsed response")
                 
                 # Validate response structure
-                required_fields = ["overall_score", "correctness_functionality", "code_quality_maintainability", "performance_efficiency", "security_vulnerability", "code_consistency_style", "scalability_extensibility", "error_handling_robustness", "suggestions", "improved_code"]
+                required_fields = [
+                    "overall_score", "correctness_functionality", "code_quality_maintainability", 
+                    "performance_efficiency", "security_vulnerability", "code_consistency_style", 
+                    "scalability_extensibility", "error_handling_robustness", "suggestions"
+                ]
                 for field in required_fields:
                     if field not in analysis:
                         raise ValueError(f"Missing required field: {field}")
                 
                 # Round numeric scores
-                for key in ["overall_score", "correctness_functionality", "code_quality_maintainability", "performance_efficiency", "security_vulnerability", "code_consistency_style", "scalability_extensibility", "error_handling_robustness"]:
+                for key in [
+                    "overall_score", "correctness_functionality", "code_quality_maintainability", 
+                    "performance_efficiency", "security_vulnerability", "code_consistency_style", 
+                    "scalability_extensibility", "error_handling_robustness"
+                ]:
                     analysis[key] = round(float(analysis[key]), 1)
+                
+                # Set default values for optional fields if they don't exist
+                if "dimension_explanations" not in analysis:
+                    analysis["dimension_explanations"] = None
+                if "improvement_summary" not in analysis:
+                    analysis["improvement_summary"] = None
+                
+                # Add this validation in the analyze_code function after parsing the response
+                if "dimension_explanations" in analysis:
+                    for key, explanation in analysis["dimension_explanations"].items():
+                        if key in analysis and "score" in explanation:
+                            if abs(explanation["score"] - analysis[key]) > 0.01:  # Allow for small floating-point differences
+                                logger.warning(f"Score mismatch in {key}: {explanation['score']} != {analysis[key]}")
+                                explanation["score"] = analysis[key]  # Force consistency
                 
                 return JSONResponse(content=analysis, status_code=200)
                 

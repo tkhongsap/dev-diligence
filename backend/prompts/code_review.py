@@ -10,12 +10,76 @@ CODE_REVIEW_PROMPT = """You are a code review assistant. Analyze the provided co
     "error_handling_robustness": (number between 0-10),
     "suggestions": [
         {
-            "type": "improvement" or "warning" or "error",
-            "category": "overall" or "correctness" or "quality" or "performance" or "security" or "consistency" or "scalability" or "error_handling",
+            "type": "improvement" | "warning" | "error",
+            "category": "overall" | "correctness" | "quality" | "performance" | "security" | "consistency" | "scalability" | "error_handling",
             "message": "detailed suggestion"
         }
     ],
-    "improved_code": "improved version of the code"
+    "dimension_explanations": {
+        "correctness_functionality": {
+            "score": (must match the correctness_functionality score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        },
+        "code_quality_maintainability": {
+            "score": (must match the code_quality_maintainability score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        },
+        "performance_efficiency": {
+            "score": (must match the performance_efficiency score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        },
+        "security_vulnerability": {
+            "score": (must match the security_vulnerability score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        },
+        "code_consistency_style": {
+            "score": (must match the code_consistency_style score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        },
+        "scalability_extensibility": {
+            "score": (must match the scalability_extensibility score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        },
+        "error_handling_robustness": {
+            "score": (must match the error_handling_robustness score above),
+            "explanation": "Detailed explanation of why this score was given",
+            "key_findings": ["List of main points that led to this score"],
+            "improvement_suggestions": ["Specific suggestions for improvement"]
+        }
+    },
+    "improvement_summary": {
+        "critical_improvements": [
+            "List of high-priority improvements needed"
+        ],
+        "recommended_improvements": [
+            "List of recommended but non-critical improvements"
+        ],
+        "positive_aspects": [
+            "List of well-implemented aspects worth maintaining"
+        ]
+    },
+    "suggested_implementation": {
+        "code": "Complete improved implementation that would achieve a 9+ score",
+        "improvements": [
+            "List of specific improvements made in this implementation"
+        ],
+        "benefits": [
+            "List of benefits and best practices implemented"
+        ],
+        "explanation": "Brief explanation of why this implementation is better"
+    }
 }
 
 Evaluate each dimension using these specific criteria:
@@ -84,5 +148,27 @@ Calculate the overall_score as a weighted average of all dimensions, considering
 - Security and correctness should be weighted more heavily
 - Style and consistency can be weighted less heavily
 - Round all scores to one decimal place
+
+For each dimension_explanations:
+- The score MUST exactly match the corresponding score from the main scores above
+- Provide a clear explanation of why that score was given
+- List specific findings that influenced the score
+- Offer actionable improvement suggestions
+- Keep explanations concise but informative
+
+For the improvement_summary:
+- critical_improvements: List urgent changes needed for security, correctness, or major performance issues
+- recommended_improvements: List suggestions for better maintainability, scalability, or minor performance improvements
+- positive_aspects: Highlight good practices and patterns worth maintaining
+
+For the suggested_implementation:
+- Provide a complete, production-ready implementation that would achieve a 9+ score
+- Include comprehensive error handling and validation
+- Implement all security best practices
+- Add proper type hints and documentation
+- Follow all modern coding standards
+- Structure the code for maximum maintainability and scalability
+- Include comments explaining key improvements
+- Make it a realistic, practical implementation that addresses all identified issues
 
 Respond only with the JSON, no other text.""" 
