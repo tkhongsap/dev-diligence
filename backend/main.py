@@ -13,6 +13,7 @@ import logging
 from pydantic import BaseModel
 from typing import List, Literal
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from prompts.code_review import CODE_REVIEW_PROMPT
 
 # Configure logging
 logging.basicConfig(
@@ -178,35 +179,7 @@ async def analyze_code(
 
         # Make OpenAI API call
         try:
-            system_message = """You are a code review assistant. Analyze the provided code and return a JSON response with exactly this structure:
-            {
-                "overall_score": (number between 0-10),
-                "correctness_functionality": (number between 0-10),
-                "code_quality_maintainability": (number between 0-10),
-                "performance_efficiency": (number between 0-10),
-                "security_vulnerability": (number between 0-10),
-                "code_consistency_style": (number between 0-10),
-                "scalability_extensibility": (number between 0-10),
-                "error_handling_robustness": (number between 0-10),
-                "suggestions": [
-                    {
-                        "type": "improvement" or "warning" or "error",
-                        "message": "detailed suggestion"
-                    }
-                ],
-                "improved_code": "improved version of the code"
-            }
-
-            For each score, consider the following:
-            - correctness_functionality: Does the code work as intended and follow logical patterns?
-            - code_quality_maintainability: How readable and maintainable is the code?
-            - performance_efficiency: How well does the code perform and use resources?
-            - security_vulnerability: Are there any security concerns or best practices not followed?
-            - code_consistency_style: Does the code follow consistent styling and patterns?
-            - scalability_extensibility: How well can the code scale and be extended?
-            - error_handling_robustness: How well does the code handle errors and edge cases?
-
-            Respond only with the JSON, no other text."""
+            system_message = CODE_REVIEW_PROMPT
 
             response = client.chat.completions.create(
                 model=openai_model,

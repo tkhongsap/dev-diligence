@@ -27,7 +27,7 @@ interface Analysis {
 }
 
 const getScoreColors = (score: number) => {
-  if (score >= 7) {
+  if (score > 7) {
     return {
       card: "from-green-50/50",
       text: "text-green-600",
