@@ -16,11 +16,15 @@ COPY . .
 # Set environment variables
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=8080
 
 # Build with verbose logging
 RUN set -x && \
     echo "Starting build process..." && \
     ls -la && \
     npm run build --verbose
+
+# Expose the port
+EXPOSE 8080
 
 CMD ["npm", "start"] 
